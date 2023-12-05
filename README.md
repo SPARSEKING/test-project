@@ -1,5 +1,9 @@
 # test-project
 
+## npm version
+
+run project with npm version 14.19.0
+
 ## Project setup
 ```
 npm install
