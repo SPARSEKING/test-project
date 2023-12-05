@@ -1,28 +1,101 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="wrapper"> 
+      <a-space>
+        Курс:
+        <a-input-number
+          :default-value="getExchangeRate"
+          :min="20"
+          :max="80"
+          :formatter="value => `₽ ${value}`"
+          :parser="value => value.replace(/\₽\s?|(,*)/g, '')"
+          @change="changeExchangeRate"
+        />
+      </a-space>
+      <a-space>
+        <a-statistic-countdown
+          title="Обновление через:"
+          format="ss:SSS"
+          :value="counter"
+          @finish="complete"
+        />
+        <a-button type="link" icon="sync" @click="complete"/>
+      </a-space>
+    </div>
+    <div class="components-wrapper">
+      <ShopComponent/>
+      <CartComponent/>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { mapActions, mapGetters, mapMutations } from 'vuex';
+import CartComponent from './components/CartComponent.vue';
+import ShopComponent from './components/ShopComponent.vue';
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    ShopComponent,
+    CartComponent
+  },
+  data() {
+    return {
+      counter: Date.now() + 15000
+    }
+  },
+  computed: {
+    ...mapGetters(['getExchangeRate'])
+  },
+  methods: {
+    ...mapActions(['parseProducts']),
+    ...mapMutations(['updateExchangeRate', 'updateCartProductsPrice']),
+    changeExchangeRate(data) {
+      if (data >= 20 && data <= 80) {
+        this.updateExchangeRate(data)
+      }
+    },
+    async complete() {
+      await this.parseProducts()
+      await this.updateCartProductsPrice()
+      this.counter = Date.now() + 15000
+    }
   }
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  font-family: 'Roboto', sans-serif;
+  padding: 20px;
 }
+
+p {
+  margin-bottom: 0 !important;
+}
+
+.components-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+
+  .ant-statistic {
+    display: flex;
+    align-items: center;
+  }
+
+  .ant-statistic-title {
+    margin-bottom: 0;
+    margin-right: 5px;
+  }
+}
+
+ 
 </style>
